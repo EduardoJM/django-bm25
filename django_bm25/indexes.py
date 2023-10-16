@@ -111,6 +111,7 @@ class Bm25Index(PostgresIndex):
     
     def deconstruct(self):
         path, args, kwargs = super().deconstruct()
+        args = ()
 
         fields = ['text_fields', 'numeric_fields', 'boolean_fields', 'json_fields']
         for field in fields:
