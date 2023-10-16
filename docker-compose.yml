@@ -1,0 +1,35 @@
+version: "3.7"
+
+services:
+  db_bm25:
+    container_name: db
+    image: paradedb/paradedb:latest
+    volumes:
+      - bm25:/var/lib/postgresql/data/
+    environment:
+      - TZ=America/Sao_Paulo
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    networks:
+      - bm25
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["./entrypoints/api.sh"]
+    volumes:
+      - ./:/opt/app/
+    ports:
+      - 8000:8000
+    depends_on:
+      - db_bm25
+    networks:
+      - bm25
+
+volumes:
+  bm25:
+
+networks:
+  bm25:
