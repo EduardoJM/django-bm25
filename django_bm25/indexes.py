@@ -1,5 +1,6 @@
 import json
 from django.contrib.postgres.indexes import PostgresIndex
+from django_bm25.expressions import TableStar
 
 TEXT_FIELD_CONFIGS = [
     'indexed',
@@ -76,15 +77,13 @@ class Bm25Index(PostgresIndex):
 
     def __init__(
         self,
-        *expressions,
-        fields=(),
         name=None,
         text_fields={},
         numeric_fields={},
         boolean_fields={},
         json_fields={},
     ):
-        super().__init__(*expressions, fields=fields, name=name)
+        super().__init__(TableStar(), name=name)
         
         self.text_fields = text_fields
         self.numeric_fields = numeric_fields
@@ -112,6 +111,7 @@ class Bm25Index(PostgresIndex):
     
     def deconstruct(self):
         path, args, kwargs = super().deconstruct()
+        args = ()
 
         fields = ['text_fields', 'numeric_fields', 'boolean_fields', 'json_fields']
         for field in fields:

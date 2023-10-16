@@ -7,7 +7,6 @@ from django_bm25.operations import Bm25Extension
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('ibge', '0001_initial'),
     ]
 
     operations = [
