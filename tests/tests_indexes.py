@@ -1,30 +1,19 @@
 from django.db.models.functions import Lower
 from django_bm25.indexes import Bm25Index
-from . import PostgreSQLSimpleTestCase
-from .models import CharFieldModel
+from . import PostgreSQLTestCase
 
-class IndexTestMixin:
-    def test_name_auto_generation(self):
-        index = self.index_class(fields=["field"])
-        index.set_name_with_model(CharFieldModel)
-        self.assertRegex(
-            index.name, r"tests_charf_field_[0-9a-f]{6}_%s" % self.index_class.suffix
-        )
-
+class Bm25IndexTests(PostgreSQLTestCase):
     def test_deconstruction_no_customization(self):
-        index = self.index_class(
-            fields=["title"], name="test_title_%s" % self.index_class.suffix
-        )
+        index = Bm25Index(name="test_title_%s" % Bm25Index.suffix)
         path, args, kwargs = index.deconstruct()
         self.assertEqual(
-            path, "django_bm25.indexes.%s" % self.index_class.__name__
+            path, "django_bm25.indexes.%s" % Bm25Index.__name__
         )
         self.assertEqual(args, ())
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
-                "name": "test_title_%s" % self.index_class.suffix,
+                "name": "test_title_%s" % Bm25Index.suffix,
                 "text_fields": {},
                 "numeric_fields": {},
                 "boolean_fields": {},
@@ -33,14 +22,14 @@ class IndexTestMixin:
         )
 
     def test_deconstruction_with_expressions_no_customization(self):
-        name = f"test_title_{self.index_class.suffix}"
-        index = self.index_class(Lower("title"), name=name)
+        name = f"test_title_{Bm25Index.suffix}"
+        index = Bm25Index(name=name)
         path, args, kwargs = index.deconstruct()
         self.assertEqual(
             path,
-            f"django_bm25.indexes.{self.index_class.__name__}",
+            f"django_bm25.indexes.{Bm25Index.__name__}",
         )
-        self.assertEqual(args, (Lower("title"),))
+        self.assertEqual(args, ())
         self.assertEqual(
             kwargs,
             {
@@ -51,10 +40,6 @@ class IndexTestMixin:
                 "json_fields": {},
             }
         )
-
-
-class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
-    index_class = Bm25Index
 
     def test_create_with_invalid_text_fields_property(self):
         with self.assertRaises(AttributeError):
@@ -92,7 +77,6 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
                 "name": "test_title_bm25",
                 "text_fields": {},
                 "numeric_fields": {},
@@ -102,17 +86,13 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
         )
     
     def test_deconstruction_with_text_fields_list(self):
-        index = Bm25Index(
-            name="test_title_bm25",
-            text_fields=["title"]
-        )
+        index = Bm25Index(name="test_title_bm25", text_fields=["title"])
         path, args, kwargs = index.deconstruct()
         self.assertEqual(path, "django_bm25.indexes.Bm25Index")
         self.assertEqual(args, ())
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
                 "name": "test_title_bm25",
                 "text_fields": { "title": {} },
                 "numeric_fields": {},
@@ -132,7 +112,6 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
                 "name": "test_title_bm25",
                 "text_fields": { "title": { "record": "basic", "fast": True } },
                 "numeric_fields": {},
@@ -142,17 +121,13 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
         )
 
     def test_deconstruction_with_numeric_fields_list(self):
-        index = Bm25Index(
-            name="test_title_bm25",
-            numeric_fields=["title"]
-        )
+        index = Bm25Index(name="test_title_bm25", numeric_fields=["title"])
         path, args, kwargs = index.deconstruct()
         self.assertEqual(path, "django_bm25.indexes.Bm25Index")
         self.assertEqual(args, ())
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
                 "name": "test_title_bm25",
                 "numeric_fields": { "title": {} },
                 "text_fields": {},
@@ -172,7 +147,6 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
                 "name": "test_title_bm25",
                 "numeric_fields": { "title": { "stored": False, "fast": True } },
                 "text_fields": {},
@@ -183,17 +157,13 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
 
 
     def test_deconstruction_with_boolean_fields_list(self):
-        index = Bm25Index(
-            name="test_title_bm25",
-            boolean_fields=["title"]
-        )
+        index = Bm25Index(name="test_title_bm25", boolean_fields=["title"])
         path, args, kwargs = index.deconstruct()
         self.assertEqual(path, "django_bm25.indexes.Bm25Index")
         self.assertEqual(args, ())
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
                 "name": "test_title_bm25",
                 "boolean_fields": { "title": {} },
                 "text_fields": {},
@@ -213,7 +183,6 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
                 "name": "test_title_bm25",
                 "boolean_fields": { "title": { "stored": False, "fast": True } },
                 "text_fields": {},
@@ -223,17 +192,13 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
         )
 
     def test_deconstruction_with_json_fields_list(self):
-        index = Bm25Index(
-            name="test_title_bm25",
-            json_fields=["title"]
-        )
+        index = Bm25Index(name="test_title_bm25", json_fields=["title"])
         path, args, kwargs = index.deconstruct()
         self.assertEqual(path, "django_bm25.indexes.Bm25Index")
         self.assertEqual(args, ())
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
                 "name": "test_title_bm25",
                 "json_fields": { "title": {} },
                 "text_fields": {},
@@ -253,7 +218,6 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
         self.assertEqual(
             kwargs,
             {
-                "fields": ["title"],
                 "name": "test_title_bm25",
                 "json_fields": { "title": { "stored": False, "fast": True } },
                 "text_fields": {},
@@ -261,14 +225,3 @@ class Bm25IndexTests(IndexTestMixin, PostgreSQLSimpleTestCase):
                 "boolean_fields": {},
             },
         )
-
-    def test_sql(self):
-        index = Bm25Index(
-            name='idx_city_name',
-            text_fields=['field',]
-        )
-        from django.db import connection
-        with connection.schema_editor() as schema_editor:
-            print(
-                index.create_sql(CharFieldModel, schema_editor)
-            )
