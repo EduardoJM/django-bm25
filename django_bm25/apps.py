@@ -6,6 +6,3 @@ from django_bm25.lookups import FullTextSearchLookup
 class DjangoBm25Config(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'django_bm25'
-
-    def ready(self):
-        Field.register_lookup(FullTextSearchLookup)
