@@ -118,25 +118,3 @@ class Bm25Index(PostgresIndex):
             kwargs[field] = getattr(self, field)
 
         return path, args, kwargs
-
-    """
-    def create_sql(self, model, schema_editor, using="", **kwargs):
-        self.check_supported(schema_editor)
-        sql_create_index = (
-            "CREATE INDEX %(name)s ON %(table)s%(using)s "
-            "(%(columns)s)%(include)s%(extra)s%(condition)s"
-        )
-        statement = super().create_sql(
-            model, schema_editor, using=" USING %s" % (using or self.suffix), 
-            sql=sql_create_index,
-            **kwargs
-        )
-        with_params = self.get_with_params()
-        if with_params:
-            statement.parts["extra"] = " WITH (%s)%s" % (
-                ", ".join(with_params),
-                statement.parts["extra"],
-            )
-        return statement
-    """
-
