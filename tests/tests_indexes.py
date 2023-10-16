@@ -1,8 +1,18 @@
+from django.db import connection
 from django.db.models.functions import Lower
 from django_bm25.indexes import Bm25Index
 from . import PostgreSQLTestCase
+from .models import CharFieldModel
 
 class Bm25IndexTests(PostgreSQLTestCase):
+    def get_constraints(self, table):
+        """
+        Get the indexes on the table using a new cursor.
+        """
+        # TODO: in the future, we should to leave this to an util
+        with connection.cursor() as cursor:
+            return connection.introspection.get_constraints(cursor, table)
+
     def test_deconstruction_no_customization(self):
         index = Bm25Index(name="test_title_%s" % Bm25Index.suffix)
         path, args, kwargs = index.deconstruct()
@@ -234,3 +244,28 @@ class Bm25IndexTests(PostgreSQLTestCase):
         with self.assertRaisesMessage(TypeError, msg):
             Bm25Index(fields=('test', ), name='test_title_bm25')
 
+    # TODO: add test to validated raises an error when nothing field
+    # configuration is provided and, then, implements this feature.
+
+    def test_created_index(self):
+        # Ensure the table is there and doesn't have an index.
+        self.assertNotIn(
+            "field", self.get_constraints(CharFieldModel._meta.db_table)
+        )
+        # Add the index
+        index_name = "bm25_model_field_index"
+        index = Bm25Index(
+            name=index_name,
+            text_fields=['field']
+        )
+        with connection.schema_editor() as editor:
+            editor.add_index(CharFieldModel, index)
+        constraints = self.get_constraints(CharFieldModel._meta.db_table)
+        # Check index was added
+        self.assertEqual(constraints[index_name]["type"], Bm25Index.suffix)
+        # Drop the index
+        with connection.schema_editor() as editor:
+            editor.remove_index(CharFieldModel, index)
+        self.assertNotIn(
+            index_name, self.get_constraints(CharFieldModel._meta.db_table)
+        )
