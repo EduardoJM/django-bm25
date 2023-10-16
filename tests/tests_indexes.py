@@ -225,3 +225,12 @@ class Bm25IndexTests(PostgreSQLTestCase):
                 "boolean_fields": {},
             },
         )
+
+    def test_suffix(self):
+        self.assertEqual(Bm25Index.suffix, 'bm25')
+
+    def test_unsupported_fields(self):
+        msg = "__init__() got an unexpected keyword argument 'fields'"
+        with self.assertRaisesMessage(TypeError, msg):
+            Bm25Index(fields=('test', ), name='test_title_bm25')
+
