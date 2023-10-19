@@ -269,3 +269,35 @@ class Bm25IndexTests(PostgreSQLTestCase):
         self.assertNotIn(
             index_name, self.get_constraints(CharFieldModel._meta.db_table)
         )
+
+    def test_created_index_save_config_text_fields(self):
+        # Ensure the table is there and doesn't have an index.
+        self.assertNotIn(
+            "field", self.get_constraints(CharFieldModel._meta.db_table)
+        )
+        # Add the index
+        index_name = "bm25_model_field_index"
+        index = Bm25Index(
+            name=index_name,
+            text_fields={
+                'field': {
+                    'tokenizer': 'whitespace',
+                    'normalizer': 'lowercase',
+                },
+            }
+        )
+        with connection.schema_editor() as editor:
+            editor.add_index(CharFieldModel, index)
+        constraints = self.get_constraints(CharFieldModel._meta.db_table)
+        # Check index was added
+        self.assertEqual(constraints[index_name]["type"], Bm25Index.suffix)
+        self.assertEqual(
+            constraints[index_name]["options"],
+            ['text_fields={"field": {"tokenizer": "whitespace", "normalizer": "lowercase"}}']
+        )
+        # Drop the index
+        with connection.schema_editor() as editor:
+            editor.remove_index(CharFieldModel, index)
+        self.assertNotIn(
+            index_name, self.get_constraints(CharFieldModel._meta.db_table)
+        )
